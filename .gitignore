@@ -30,7 +30,7 @@ Thumbs.db
 *.db-wal
 app.db
 
-## Exclude other markdown documentation (push only README.md)
+
 docs/
 *.md
 !README.md
