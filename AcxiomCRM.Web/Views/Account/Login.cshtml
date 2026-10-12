@@ -1,0 +1,90 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Sign In";
+    Layout = "_Layout";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5 col-lg-4">
+            <div class="text-center mb-4">
+                <div class="sidebar-brand-icon mx-auto mb-2" style="width: 50px; height: 50px; font-size: 1.5rem;">
+                    <i class="bi bi-diagram-3-fill"></i>
+                </div>
+                <h3 class="fw-bold text-dark mb-1">AcxiomCRM</h3>
+                <p class="text-muted small">Role-Based Customer Relationship Management</p>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h5 class="card-title fw-bold text-dark mb-3">Sign in to your account</h5>
+
+                    <form asp-controller="Account" asp-action="Login" asp-route-returnUrl="@ViewData["ReturnUrl"]" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-envelope"></i></span>
+                                <input asp-for="Email" class="form-control" id="loginEmail" placeholder="user@acxiomcrm.local" autocomplete="username" />
+                            </div>
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Password" class="form-label"></label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-lock"></i></span>
+                                <input asp-for="Password" class="form-control" id="loginPassword" type="password" placeholder="••••••••" autocomplete="current-password" />
+                            </div>
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <div class="form-check">
+                                <input asp-for="RememberMe" class="form-check-input" />
+                                <label asp-for="RememberMe" class="form-check-label small text-muted"></label>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                            <i class="bi bi-box-arrow-in-right me-1"></i> Sign In
+                        </button>
+                    </form>
+
+                    <div class="mt-4 pt-3 border-top">
+                        <small class="text-muted fw-bold d-block mb-2 text-uppercase" style="font-size: 0.7rem;">Demo Credentials</small>
+                        <div class="d-flex flex-column gap-1">
+                            <button type="button" class="btn btn-sm btn-outline-danger text-start py-1" onclick="fillCreds('admin@acxiomcrm.local', 'Admin@12345!')">
+                                <i class="bi bi-shield-lock-fill me-1"></i> <strong>Admin:</strong> admin@acxiomcrm.local
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-info text-dark text-start py-1" onclick="fillCreds('manager@acxiomcrm.local', 'Manager@12345!')">
+                                <i class="bi bi-person-workspace me-1"></i> <strong>Manager:</strong> manager@acxiomcrm.local
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-success text-start py-1" onclick="fillCreds('sales1@acxiomcrm.local', 'Sales@12345!')">
+                                <i class="bi bi-person-fill me-1"></i> <strong>Sales Exec:</strong> sales1@acxiomcrm.local
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center mt-3">
+                <span class="text-muted small">Don't have an account?</span>
+                <a asp-action="Register" class="text-primary small fw-semibold text-decoration-none">Create account</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        function fillCreds(email, password) {
+            document.getElementById('loginEmail').value = email;
+            document.getElementById('loginPassword').value = password;
+        }
+    </script>
+}

@@ -1,0 +1,60 @@
+@model UserEditRoleViewModel
+@{
+    ViewData["Title"] = $"Edit Role - {Model.FullName}";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-1 text-gray-800">Assign Role</h1>
+                <p class="text-muted mb-0">Modify role-based authorization permissions for user.</p>
+            </div>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to Users
+            </a>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <h6 class="m-0 fw-bold text-primary"><i class="bi bi-shield-lock me-2"></i>User: @Model.FullName</h6>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="EditRole" asp-route-id="@Model.UserId" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="UserId" />
+                    <input type="hidden" asp-for="FullName" />
+                    <input type="hidden" asp-for="Email" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4" role="alert"></div>
+
+                    <div class="p-3 bg-light rounded mb-3">
+                        <small class="text-muted d-block">Account Email:</small>
+                        <span class="fw-semibold text-dark">@Model.Email</span>
+                    </div>
+
+                    <div class="mb-4">
+                        <label asp-for="Role" class="form-label fw-semibold"></label>
+                        <select asp-for="Role" class="form-select form-select-lg" asp-items="Model.RolesList"></select>
+                        <span asp-validation-for="Role" class="text-danger small"></span>
+                        <div class="form-text mt-2 small text-muted">
+                            <strong>Admin:</strong> Full administrative rights, user management, audit logs.<br />
+                            <strong>Manager:</strong> Pipeline oversight, team management, management reports.<br />
+                            <strong>Sales Executive:</strong> Owns and manages assigned customers, leads, and deals.
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2 pt-3 border-top">
+                        <a asp-action="Index" class="btn btn-light border px-4">Cancel</a>
+                        <button type="submit" class="btn btn-primary px-4">
+                            <i class="bi bi-check-circle me-1"></i> Update Role
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

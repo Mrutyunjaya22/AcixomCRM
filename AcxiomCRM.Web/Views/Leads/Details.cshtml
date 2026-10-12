@@ -1,0 +1,184 @@
+@model LeadDetailsViewModel
+@{
+    ViewData["Title"] = Model.Lead.LeadName;
+    var l = Model.Lead;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <div class="d-flex align-items-center gap-2">
+            <h4 class="fw-bold mb-0 text-dark">@l.LeadName</h4>
+            <span class="badge bg-light text-dark border font-monospace">@l.LeadCode</span>
+            <span class="badge @(l.Status == LeadStatus.Converted ? "bg-success" : l.Status == LeadStatus.Qualified ? "bg-success-subtle text-success" : l.Status == LeadStatus.Lost ? "bg-danger-subtle text-danger" : "bg-primary-subtle text-primary")">
+                @l.Status
+            </span>
+        </div>
+        <small class="text-muted">Captured on @l.CreatedDate.ToString("MMMM dd, yyyy")</small>
+    </div>
+    <div class="d-flex gap-2">
+        @if (Model.CanConvert)
+        {
+            <a asp-action="Convert" asp-route-id="@l.LeadId" class="btn btn-success btn-sm">
+                <i class="bi bi-arrow-repeat me-1"></i> Convert Lead
+            </a>
+        }
+        @if (l.Status != LeadStatus.Converted)
+        {
+            <a asp-action="Edit" asp-route-id="@l.LeadId" class="btn btn-outline-primary btn-sm">
+                <i class="bi bi-pencil me-1"></i> Edit
+            </a>
+            <form asp-action="MarkLost" asp-route-id="@l.LeadId" method="post" class="d-inline" onsubmit="return confirm('Mark this lead as Lost?');">
+                @Html.AntiForgeryToken()
+                <button type="submit" class="btn btn-outline-danger btn-sm">
+                    <i class="bi bi-x-circle me-1"></i> Mark Lost
+                </button>
+            </form>
+        }
+        <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+            <i class="bi bi-arrow-left me-1"></i> Leads
+        </a>
+    </div>
+</div>
+
+<!-- Lead Summary Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="card p-3 h-100">
+            <h6 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="bi bi-person-lines-fill me-2 text-primary"></i>Contact & Company</h6>
+            <div class="mb-2"><span class="text-muted small d-block">Email</span><a href="mailto:@l.Email" class="text-dark fw-semibold text-decoration-none">@l.Email</a></div>
+            <div class="mb-2"><span class="text-muted small d-block">Phone</span><a href="tel:@l.Phone" class="text-dark fw-semibold text-decoration-none">@l.Phone</a></div>
+            <div class="mb-2"><span class="text-muted small d-block">Company</span><span class="fw-semibold">@(l.CompanyName ?? "N/A")</span></div>
+            <div><span class="text-muted small d-block">Source</span><span class="badge bg-light text-secondary border">@l.Source</span></div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card p-3 h-100">
+            <h6 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="bi bi-graph-up me-2 text-info"></i>Deal Potential</h6>
+            <div class="mb-2"><span class="text-muted small d-block">Expected Deal Value</span><span class="fw-bold text-primary fs-5">$@l.ExpectedValue.ToString("N0")</span></div>
+            <div class="mb-2"><span class="text-muted small d-block">Priority</span><span class="badge @(l.Priority == LeadPriority.High ? "bg-danger-subtle text-danger" : "bg-warning-subtle text-warning")">@l.Priority</span></div>
+            <div class="mb-2"><span class="text-muted small d-block">Assigned Executive</span><span class="fw-semibold">@(l.AssignedTo?.FullName ?? "Unassigned")</span></div>
+            <div><span class="text-muted small d-block">Notes</span><p class="small text-muted mb-0">@(l.Notes ?? "No notes.")</p></div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card p-3 h-100 bg-light border">
+            <h6 class="fw-bold text-dark border-bottom pb-2 mb-3"><i class="bi bi-link-45deg me-2 text-success"></i>Conversion History</h6>
+            @if (l.Status == LeadStatus.Converted)
+            {
+                <div class="alert alert-success py-2 mb-2 small">
+                    <i class="bi bi-check-circle-fill me-1"></i> Lead Converted Successfully
+                </div>
+                @if (l.ConvertedCustomer != null)
+                {
+                    <div class="mb-2">
+                        <span class="text-muted small d-block">Resulting Customer</span>
+                        <a asp-controller="Customers" asp-action="Details" asp-route-id="@l.ConvertedCustomerId" class="fw-bold text-decoration-none">
+                            @l.ConvertedCustomer.CustomerName (@l.ConvertedCustomer.CustomerCode)
+                        </a>
+                    </div>
+                }
+                @if (l.ConvertedOpportunity != null)
+                {
+                    <div>
+                        <span class="text-muted small d-block">Resulting Opportunity</span>
+                        <a asp-controller="Opportunities" asp-action="Details" asp-route-id="@l.ConvertedOpportunityId" class="fw-bold text-decoration-none">
+                            @l.ConvertedOpportunity.OpportunityName (@l.ConvertedOpportunity.OpportunityCode)
+                        </a>
+                    </div>
+                }
+            }
+            else
+            {
+                <p class="text-muted small mb-3">Qualifying this prospect? Convert them directly into a permanent customer and sales opportunity.</p>
+                <a asp-action="Convert" asp-route-id="@l.LeadId" class="btn btn-sm btn-success">
+                    <i class="bi bi-arrow-repeat me-1"></i> Proceed to Conversion
+                </a>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Related Follow-Ups & Activities -->
+<div class="row g-3">
+    <div class="col-lg-6">
+        <div class="card mb-0">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-calendar-event me-2 text-info"></i>Follow-Ups (@l.FollowUps.Count)</span>
+                <a asp-controller="FollowUps" asp-action="Create" asp-route-leadId="@l.LeadId" class="btn btn-sm btn-outline-info py-0 text-dark">
+                    <i class="bi bi-plus-lg"></i> Schedule
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Subject</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (l.FollowUps.Any())
+                        {
+                            @foreach (var f in l.FollowUps)
+                            {
+                                <tr>
+                                    <td><small>@f.FollowUpDate.ToString("MMM dd, yyyy")</small></td>
+                                    <td><div class="fw-semibold">@f.Subject</div></td>
+                                    <td><span class="badge bg-light text-dark border">@f.FollowUpType</span></td>
+                                    <td><span class="badge bg-light text-dark border">@f.Status</span></td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr><td colspan="4" class="text-center py-3 text-muted">No follow-ups recorded for this lead.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="card mb-0">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span><i class="bi bi-clock-history me-2 text-secondary"></i>Activity Log (@l.Activities.Count)</span>
+                <a asp-controller="Activities" asp-action="Create" asp-route-leadId="@l.LeadId" class="btn btn-sm btn-outline-secondary py-0">
+                    <i class="bi bi-plus-lg"></i> Log
+                </a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Type</th>
+                            <th>Headline</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (l.Activities.Any())
+                        {
+                            @foreach (var a in l.Activities)
+                            {
+                                <tr>
+                                    <td><small>@a.ActivityDate.ToString("MMM dd, yyyy")</small></td>
+                                    <td><span class="badge bg-light text-dark border">@a.ActivityType</span></td>
+                                    <td><div class="fw-semibold">@a.Subject</div></td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr><td colspan="3" class="text-center py-3 text-muted">No activities recorded.</td></tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

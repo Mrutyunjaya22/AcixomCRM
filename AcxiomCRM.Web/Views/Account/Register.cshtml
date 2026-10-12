@@ -1,0 +1,75 @@
+@model RegisterViewModel
+@{
+    ViewData["Title"] = "Create Account";
+    Layout = "_Layout";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="text-center mb-4">
+                <h3 class="fw-bold text-dark mb-1">AcxiomCRM</h3>
+                <p class="text-muted small">Register a new user account</p>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h5 class="card-title fw-bold text-dark mb-3">Create your account</h5>
+
+                    <form asp-controller="Account" asp-action="Register" method="post">
+                        @Html.AntiForgeryToken()
+
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3"></div>
+
+                        <div class="mb-3">
+                            <label asp-for="FullName" class="form-label"></label>
+                            <input asp-for="FullName" class="form-control" placeholder="John Doe" />
+                            <span asp-validation-for="FullName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label"></label>
+                            <input asp-for="Email" class="form-control" placeholder="john.doe@company.com" />
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Role" class="form-label"></label>
+                            <select asp-for="Role" class="form-select">
+                                <option value="@Roles.SalesExecutive">Sales Executive</option>
+                                <option value="@Roles.Manager">Manager</option>
+                                <option value="@Roles.Admin">Admin</option>
+                            </select>
+                            <span asp-validation-for="Role" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Password" class="form-label"></label>
+                            <input asp-for="Password" class="form-control" type="password" placeholder="At least 8 chars with uppercase, digit, special" />
+                            <span asp-validation-for="Password" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-4">
+                            <label asp-for="ConfirmPassword" class="form-label"></label>
+                            <input asp-for="ConfirmPassword" class="form-control" type="password" placeholder="Re-enter password" />
+                            <span asp-validation-for="ConfirmPassword" class="text-danger small"></span>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold">
+                            <i class="bi bi-person-plus-fill me-1"></i> Register Account
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <div class="text-center mt-3">
+                <span class="text-muted small">Already registered?</span>
+                <a asp-action="Login" class="text-primary small fw-semibold text-decoration-none">Sign in here</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

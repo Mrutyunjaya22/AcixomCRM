@@ -1,0 +1,163 @@
+@model AuditLogListViewModel
+@{
+    ViewData["Title"] = "Security & Business Audit Logs";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1 text-gray-800">Security & Business Audit Logs</h1>
+        <p class="text-muted mb-0">Immutable, append-only audit trail of system events, authentication, and data modifications.</p>
+    </div>
+    <div>
+        <span class="badge bg-secondary px-3 py-2">
+            <i class="bi bi-shield-lock me-1"></i> Append-Only Trail
+        </span>
+    </div>
+</div>
+
+<!-- Filter Card -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" asp-action="Index" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label text-muted small">User</label>
+                <select name="userId" class="form-select" asp-items="Model.UsersList">
+                    <option value="">-- All Users --</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label text-muted small">Module</label>
+                <select name="module" class="form-select" asp-items="Model.ModulesList">
+                    <option value="">-- All Modules --</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label text-muted small">Action</label>
+                <select name="actionName" class="form-select" asp-items="Model.ActionsList">
+                    <option value="">-- All Actions --</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label text-muted small">From Date</label>
+                <input type="date" name="startDate" value="@Model.StartDate?.ToString("yyyy-MM-dd")" class="form-control" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label text-muted small">To Date</label>
+                <input type="date" name="endDate" value="@Model.EndDate?.ToString("yyyy-MM-dd")" class="form-control" />
+            </div>
+            <div class="col-md-1 d-flex align-items-end gap-1">
+                <button type="submit" class="btn btn-secondary w-100">Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Audit Log Table -->
+<div class="card shadow-sm">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h6 class="m-0 fw-bold text-primary">Logged Audit Events (@Model.TotalCount)</h6>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0 font-monospace" style="font-size: 0.85rem;">
+                <thead class="table-light">
+                    <tr>
+                        <th style="font-family: inherit;">Timestamp (UTC)</th>
+                        <th style="font-family: inherit;">User</th>
+                        <th style="font-family: inherit;">Module</th>
+                        <th style="font-family: inherit;">Action</th>
+                        <th style="font-family: inherit;">Record ID</th>
+                        <th style="font-family: inherit;">IP Address</th>
+                        <th style="font-family: inherit;">Details / Values</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Logs.Any())
+                    {
+                        foreach (var log in Model.Logs)
+                        {
+                            var actionBadge = log.Action.ToUpper() switch
+                            {
+                                "LOGIN" => "bg-success",
+                                "FAILED_LOGIN" => "bg-danger",
+                                "LOGOUT" => "bg-secondary",
+                                "CREATE" => "bg-primary",
+                                "UPDATE" => "bg-info text-dark",
+                                "DELETE" or "DEACTIVATE" => "bg-danger",
+                                "CONVERT" => "bg-warning text-dark",
+                                _ => "bg-light text-dark border"
+                            };
+
+                            <tr>
+                                <td>@log.CreatedDate.ToString("yyyy-MM-dd HH:mm:ss")</td>
+                                <td>@(log.UserName ?? log.UserId ?? "System")</td>
+                                <td><span class="badge bg-light text-dark border">@log.Module</span></td>
+                                <td><span class="badge @actionBadge">@log.Action</span></td>
+                                <td>@(log.RecordId ?? "-")</td>
+                                <td>@(log.IpAddress ?? "-")</td>
+                                <td style="max-width: 380px;">
+                                    @if (!string.IsNullOrWhiteSpace(log.NewValue) || !string.IsNullOrWhiteSpace(log.OldValue))
+                                    {
+                                        <div class="text-truncate">
+                                            @if (!string.IsNullOrWhiteSpace(log.OldValue))
+                                            {
+                                                <span class="text-danger">Old: @log.OldValue</span>
+                                            }
+                                            @if (!string.IsNullOrWhiteSpace(log.NewValue))
+                                            {
+                                                <span class="text-success ms-1">New: @log.NewValue</span>
+                                            }
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted font-sans-serif">
+                                <i class="bi bi-shield-slash text-secondary display-6 d-block mb-2"></i>
+                                No audit records found matching criteria.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    @if (Model.TotalPages > 1)
+    {
+        <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
+            <small class="text-muted">Showing page @Model.CurrentPage of @Model.TotalPages (@Model.TotalCount total)</small>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-page="@(Model.CurrentPage - 1)"
+                           asp-route-userId="@Model.SelectedUserId" asp-route-module="@Model.SelectedModule"
+                           asp-route-actionName="@Model.SelectedAction">Previous</a>
+                    </li>
+                    @for (int p = 1; p <= Model.TotalPages; p++)
+                    {
+                        <li class="page-item @(p == Model.CurrentPage ? "active" : "")">
+                            <a class="page-link" asp-action="Index" asp-route-page="@p"
+                               asp-route-userId="@Model.SelectedUserId" asp-route-module="@Model.SelectedModule"
+                               asp-route-actionName="@Model.SelectedAction">@p</a>
+                        </li>
+                    }
+                    <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-page="@(Model.CurrentPage + 1)"
+                           asp-route-userId="@Model.SelectedUserId" asp-route-module="@Model.SelectedModule"
+                           asp-route-actionName="@Model.SelectedAction">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    }
+</div>

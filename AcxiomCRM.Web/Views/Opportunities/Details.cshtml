@@ -1,0 +1,241 @@
+@model OpportunityDetailsViewModel
+@using AcxiomCRM.Core.Enums
+@{
+    var opp = Model.Opportunity;
+    ViewData["Title"] = $"Opportunity - {opp.OpportunityName}";
+    var weightedVal = (opp.Amount * opp.Probability) / 100m;
+
+    var stages = new[] {
+        OpportunityStage.Qualification,
+        OpportunityStage.Proposal,
+        OpportunityStage.Negotiation,
+        OpportunityStage.Won
+    };
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <div class="d-flex align-items-center gap-2 mb-1">
+            <h1 class="h3 mb-0 text-gray-800">@opp.OpportunityName</h1>
+            <span class="badge bg-light text-dark border">@opp.OpportunityCode</span>
+            @if (opp.Status == OpportunityStatus.Won)
+            {
+                <span class="badge bg-success"><i class="bi bi-trophy me-1"></i>WON</span>
+            }
+            else if (opp.Status == OpportunityStatus.Lost)
+            {
+                <span class="badge bg-danger"><i class="bi bi-x-circle me-1"></i>LOST</span>
+            }
+            else
+            {
+                <span class="badge bg-primary">OPEN</span>
+            }
+        </div>
+        <p class="text-muted mb-0">
+            Customer: <a asp-controller="Customers" asp-action="Details" asp-route-id="@opp.CustomerId" class="fw-semibold text-decoration-none">@(opp.Customer?.CustomerName ?? "Customer")</a>
+            @if (opp.Lead != null)
+            {
+                <span class="mx-2">&bull;</span>
+                <span>Converted from Lead: <a asp-controller="Leads" asp-action="Details" asp-route-id="@opp.LeadId" class="text-decoration-none">@opp.Lead.LeadName</a></span>
+            }
+        </p>
+    </div>
+    <div class="d-flex gap-2">
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i> Pipeline
+        </a>
+        @if (Model.CanEdit)
+        {
+            <a asp-action="Edit" asp-route-id="@opp.OpportunityId" class="btn btn-primary">
+                <i class="bi bi-pencil me-1"></i> Edit Deal
+            </a>
+        }
+    </div>
+</div>
+
+<!-- Pipeline Stage Progress Stepper -->
+<div class="card shadow-sm mb-4 border-0">
+    <div class="card-body py-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="fw-bold mb-0 text-muted text-uppercase small">Pipeline Stage Progress</h6>
+            <div class="dropdown">
+                <button class="btn btn-sm btn-outline-primary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                    Change Stage
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    @foreach (OpportunityStage s in Enum.GetValues(typeof(OpportunityStage)))
+                    {
+                        <li>
+                            <form asp-action="UpdateStage" asp-route-id="@opp.OpportunityId" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="stage" value="@s" />
+                                <button type="submit" class="dropdown-item @(opp.Stage == s ? "active" : "")">
+                                    Move to @s
+                                </button>
+                            </form>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+
+        <div class="row text-center g-2">
+            @foreach (var s in stages)
+            {
+                var isPast = opp.Stage > s;
+                var isCurrent = opp.Stage == s;
+                var isWon = opp.Stage == OpportunityStage.Won && s == OpportunityStage.Won;
+                var boxClass = isCurrent ? "bg-primary text-white shadow-sm" :
+                               isPast ? "bg-light text-success border border-success" :
+                               "bg-light text-muted border";
+
+                <div class="col-md-3">
+                    <div class="p-3 rounded @boxClass">
+                        <div class="small fw-bold">
+                            @if (isPast) { <i class="bi bi-check-circle-fill me-1"></i> }
+                            @if (isCurrent) { <i class="bi bi-arrow-right-circle-fill me-1"></i> }
+                            @s
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        @if (opp.Stage == OpportunityStage.Lost)
+        {
+            <div class="alert alert-danger mt-3 mb-0 py-2 text-center small">
+                <i class="bi bi-x-octagon-fill me-1"></i> This deal was marked as <strong>Lost</strong>.
+            </div>
+        }
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Key Metrics & Details -->
+    <div class="col-lg-7">
+        <div class="card shadow-sm mb-4 border-0">
+            <div class="card-header bg-white py-3">
+                <h6 class="m-0 fw-bold text-primary"><i class="bi bi-cash-stack me-2"></i>Financial & Deal Overview</h6>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-sm-6">
+                        <div class="p-3 bg-light rounded border">
+                            <span class="text-muted small d-block">Deal Amount</span>
+                            <span class="h4 fw-bold text-dark mb-0">@opp.Amount.ToString("C")</span>
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="p-3 bg-light rounded border">
+                            <span class="text-muted small d-block">Weighted Pipeline Value (@opp.Probability%)</span>
+                            <span class="h4 fw-bold text-primary mb-0">@weightedVal.ToString("C")</span>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <span class="text-muted small d-block">Current Stage</span>
+                        <span class="fw-semibold">@opp.Stage</span>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="text-muted small d-block">Win Probability</span>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="progress flex-grow-1" style="height: 6px;">
+                                <div class="progress-bar bg-success" style="width: @opp.Probability%"></div>
+                            </div>
+                            <span class="fw-bold">@opp.Probability%</span>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <span class="text-muted small d-block">Expected Close Date</span>
+                        <span class="fw-semibold @(opp.ExpectedCloseDate < DateTime.UtcNow.Date && opp.Status == OpportunityStatus.Open ? "text-danger" : "")">
+                            @opp.ExpectedCloseDate.ToString("MMMM dd, yyyy")
+                        </span>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="text-muted small d-block">Assigned Sales Executive</span>
+                        <span class="fw-semibold">@(opp.AssignedTo?.FullName ?? "Unassigned")</span>
+                    </div>
+
+                    <div class="col-12">
+                        <span class="text-muted small d-block">Strategy & Notes</span>
+                        <div class="p-3 bg-light rounded mt-1">
+                            @(string.IsNullOrWhiteSpace(opp.Notes) ? "No notes recorded for this opportunity." : opp.Notes)
+                        </div>
+                    </div>
+
+                    <div class="col-sm-6">
+                        <span class="text-muted small d-block">Created Date</span>
+                        <small class="text-muted">@opp.CreatedDate.ToString("g")</small>
+                    </div>
+                    <div class="col-sm-6">
+                        <span class="text-muted small d-block">Last Modified</span>
+                        <small class="text-muted">@(opp.ModifiedDate?.ToString("g") ?? "Never")</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Customer Context & Follow-Ups -->
+    <div class="col-lg-5">
+        <!-- Customer Snapshot -->
+        <div class="card shadow-sm mb-4 border-0">
+            <div class="card-header bg-white py-3">
+                <h6 class="m-0 fw-bold text-primary"><i class="bi bi-building me-2"></i>Customer Account</h6>
+            </div>
+            <div class="card-body">
+                @if (opp.Customer != null)
+                {
+                    <h6 class="fw-bold mb-1">@opp.Customer.CustomerName</h6>
+                    <p class="text-muted small mb-3">@opp.Customer.CompanyName &bull; @opp.Customer.City, @opp.Customer.State</p>
+                    <div class="d-flex flex-column gap-2 small">
+                        <div><i class="bi bi-envelope text-muted me-2"></i>@opp.Customer.Email</div>
+                        <div><i class="bi bi-telephone text-muted me-2"></i>@opp.Customer.Phone</div>
+                    </div>
+                    <a asp-controller="Customers" asp-action="Details" asp-route-id="@opp.CustomerId" class="btn btn-sm btn-outline-primary mt-3 w-100">
+                        View Customer Record
+                    </a>
+                }
+                else
+                {
+                    <p class="text-muted mb-0">Customer information not found.</p>
+                }
+            </div>
+        </div>
+
+        <!-- Follow-Ups Linked -->
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 fw-bold text-primary"><i class="bi bi-calendar-check me-2"></i>Scheduled Follow-Ups</h6>
+                <a asp-controller="FollowUps" asp-action="Create" asp-route-opportunityId="@opp.OpportunityId" class="btn btn-sm btn-outline-primary">
+                    <i class="bi bi-plus"></i> Schedule
+                </a>
+            </div>
+            <div class="card-body p-0">
+                @if (opp.FollowUps.Any())
+                {
+                    <div class="list-group list-group-flush">
+                        @foreach (var f in opp.FollowUps.OrderBy(x => x.FollowUpDate))
+                        {
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <div class="fw-semibold small">@f.Subject</div>
+                                    <small class="text-muted">@f.FollowUpDate.ToString("MMM dd, yyyy") &bull; @f.FollowUpType</small>
+                                </div>
+                                <span class="badge @(f.Status == FollowUpStatus.Completed ? "bg-success" : f.Status == FollowUpStatus.Missed ? "bg-danger" : "bg-warning text-dark")">
+                                    @f.Status
+                                </span>
+                            </div>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="p-3 text-center text-muted small">
+                        No follow-ups currently scheduled for this deal.
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

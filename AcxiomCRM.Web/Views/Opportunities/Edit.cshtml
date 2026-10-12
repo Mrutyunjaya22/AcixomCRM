@@ -1,0 +1,192 @@
+@model OpportunityCreateEditViewModel
+@using AcxiomCRM.Core.Enums
+@{
+    ViewData["Title"] = $"Edit {Model.OpportunityName}";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-9">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-1 text-gray-800">Edit Opportunity</h1>
+                <p class="text-muted mb-0">Modify deal parameters, stage, probability, and assigned executive.</p>
+            </div>
+            <a asp-action="Details" asp-route-id="@Model.OpportunityId" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to Details
+            </a>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                <h6 class="m-0 fw-bold text-primary"><i class="bi bi-pencil-square me-2"></i>Opportunity #@Model.OpportunityCode</h6>
+                <span class="badge bg-light text-dark border">@Model.OpportunityCode</span>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Edit" asp-route-id="@Model.OpportunityId" method="post" id="oppForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="OpportunityId" />
+                    <input type="hidden" asp-for="OpportunityCode" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4" role="alert"></div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-12">
+                            <label asp-for="OpportunityName" class="form-label fw-semibold"></label>
+                            <input asp-for="OpportunityName" class="form-control form-control-lg" />
+                            <span asp-validation-for="OpportunityName" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="CustomerId" class="form-label fw-semibold"></label>
+                            <select asp-for="CustomerId" class="form-select" asp-items="Model.CustomersList">
+                                <option value="">-- Select Customer --</option>
+                            </select>
+                            <span asp-validation-for="CustomerId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="LeadId" class="form-label fw-semibold"></label>
+                            <select asp-for="LeadId" class="form-select" asp-items="Model.LeadsList">
+                                <option value="">-- None / Direct Opportunity --</option>
+                            </select>
+                            <span asp-validation-for="LeadId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="Amount" class="form-label fw-semibold"></label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input asp-for="Amount" id="amountInput" class="form-control" type="number" step="0.01" min="0.01" />
+                            </div>
+                            <span asp-validation-for="Amount" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="Stage" class="form-label fw-semibold"></label>
+                            <select asp-for="Stage" id="stageSelect" class="form-select" asp-items="Html.GetEnumSelectList<OpportunityStage>()"></select>
+                            <span asp-validation-for="Stage" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="Probability" class="form-label fw-semibold"></label>
+                            <div class="input-group">
+                                <input asp-for="Probability" id="probInput" class="form-control" type="number" min="0" max="100" />
+                                <span class="input-group-text">%</span>
+                            </div>
+                            <span asp-validation-for="Probability" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Live Forecast Box -->
+                        <div class="col-12">
+                            <div class="p-3 bg-light rounded border d-flex justify-content-between align-items-center">
+                                <div>
+                                    <span class="text-muted small d-block">Forecasted Weighted Pipeline Value:</span>
+                                    <span class="text-muted small">(Deal Amount &times; Probability / 100)</span>
+                                </div>
+                                <div class="h4 mb-0 text-primary fw-bold" id="weightedPreview">$0.00</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="ExpectedCloseDate" class="form-label fw-semibold"></label>
+                            <input asp-for="ExpectedCloseDate" class="form-control" type="date" />
+                            <span asp-validation-for="ExpectedCloseDate" class="text-danger small d-block"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="Status" class="form-label fw-semibold"></label>
+                            <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<OpportunityStatus>()"></select>
+                            <span asp-validation-for="Status" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-4">
+                            <label asp-for="AssignedToId" class="form-label fw-semibold"></label>
+                            <select asp-for="AssignedToId" class="form-select" asp-items="Model.SalesUsersList">
+                                <option value="">-- Unassigned --</option>
+                            </select>
+                            <span asp-validation-for="AssignedToId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="Notes" class="form-label fw-semibold"></label>
+                            <textarea asp-for="Notes" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Notes" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between pt-3 border-top">
+                        <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#markLostModal">
+                            <i class="bi bi-x-circle me-1"></i> Mark as Lost
+                        </button>
+                        <div class="d-flex gap-2">
+                            <a asp-action="Details" asp-route-id="@Model.OpportunityId" class="btn btn-light border px-4">Cancel</a>
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-check-circle me-1"></i> Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Mark Lost Modal -->
+<div class="modal fade" id="markLostModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger">Mark Deal as Lost</h5>
+                <button type="button" class="btn-close" data-bs-toggle="modal"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to mark <strong>@Model.OpportunityName</strong> as Lost? The deal will be set to Lost status with 0% probability.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <form asp-action="MarkLost" asp-route-id="@Model.OpportunityId" method="post">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">Confirm Lost</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        const stageSelect = document.getElementById('stageSelect');
+        const probInput = document.getElementById('probInput');
+        const amountInput = document.getElementById('amountInput');
+        const weightedPreview = document.getElementById('weightedPreview');
+
+        const stageProbabilities = {
+            '0': 20, // Qualification
+            '1': 50, // Proposal
+            '2': 75, // Negotiation
+            '3': 100, // Won
+            '4': 0   // Lost
+        };
+
+        function updateForecast() {
+            const amount = parseFloat(amountInput.value) || 0;
+            const prob = parseFloat(probInput.value) || 0;
+            const weighted = (amount * prob) / 100;
+            weightedPreview.textContent = '$' + weighted.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        }
+
+        stageSelect.addEventListener('change', function() {
+            const val = this.value;
+            if (stageProbabilities[val] !== undefined) {
+                probInput.value = stageProbabilities[val];
+            }
+            updateForecast();
+        });
+
+        amountInput.addEventListener('input', updateForecast);
+        probInput.addEventListener('input', updateForecast);
+
+        // Initial preview calculation
+        updateForecast();
+    </script>
+}

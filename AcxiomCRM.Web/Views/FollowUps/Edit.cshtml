@@ -1,0 +1,147 @@
+@model FollowUpCreateEditViewModel
+@using AcxiomCRM.Core.Enums
+@{
+    ViewData["Title"] = $"Edit Follow-Up - {Model.Subject}";
+}
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h1 class="h3 mb-1 text-gray-800">Edit Follow-Up</h1>
+                <p class="text-muted mb-0">Update follow-up scheduling, notes, and activity status.</p>
+            </div>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-1"></i> Back to Follow-Ups
+            </a>
+        </div>
+
+        <div class="card shadow-sm border-0">
+            <div class="card-header bg-white py-3">
+                <h6 class="m-0 fw-bold text-primary"><i class="bi bi-pencil-square me-2"></i>Edit Follow-Up</h6>
+            </div>
+            <div class="card-body p-4">
+                <form asp-action="Edit" asp-route-id="@Model.FollowUpId" method="post">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" asp-for="FollowUpId" />
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger mb-4" role="alert"></div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label asp-for="RelatedType" class="form-label fw-semibold"></label>
+                            <select asp-for="RelatedType" id="relatedTypeSelect" class="form-select" asp-items="Html.GetEnumSelectList<FollowUpRelatedType>()"></select>
+                            <span asp-validation-for="RelatedType" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Customer Select -->
+                        <div class="col-md-6" id="customerDiv">
+                            <label asp-for="CustomerId" class="form-label fw-semibold"></label>
+                            <select asp-for="CustomerId" class="form-select" asp-items="Model.CustomersList">
+                                <option value="">-- Select Customer --</option>
+                            </select>
+                            <span asp-validation-for="CustomerId" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Lead Select -->
+                        <div class="col-md-6 d-none" id="leadDiv">
+                            <label asp-for="LeadId" class="form-label fw-semibold"></label>
+                            <select asp-for="LeadId" class="form-select" asp-items="Model.LeadsList">
+                                <option value="">-- Select Lead --</option>
+                            </select>
+                            <span asp-validation-for="LeadId" class="text-danger small"></span>
+                        </div>
+
+                        <!-- Opportunity Select -->
+                        <div class="col-md-6 d-none" id="oppDiv">
+                            <label asp-for="OpportunityId" class="form-label fw-semibold"></label>
+                            <select asp-for="OpportunityId" class="form-select" asp-items="Model.OpportunitiesList">
+                                <option value="">-- Select Opportunity --</option>
+                            </select>
+                            <span asp-validation-for="OpportunityId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="FollowUpType" class="form-label fw-semibold"></label>
+                            <select asp-for="FollowUpType" class="form-select" asp-items="Html.GetEnumSelectList<FollowUpType>()"></select>
+                            <span asp-validation-for="FollowUpType" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="FollowUpDate" class="form-label fw-semibold"></label>
+                            <input asp-for="FollowUpDate" class="form-control" type="date" />
+                            <span asp-validation-for="FollowUpDate" class="text-danger small d-block"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="Subject" class="form-label fw-semibold"></label>
+                            <input asp-for="Subject" class="form-control" />
+                            <span asp-validation-for="Subject" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="AssignedToId" class="form-label fw-semibold"></label>
+                            <select asp-for="AssignedToId" class="form-select" asp-items="Model.SalesUsersList">
+                                <option value="">-- Unassigned --</option>
+                            </select>
+                            <span asp-validation-for="AssignedToId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label asp-for="Status" class="form-label fw-semibold"></label>
+                            <select asp-for="Status" class="form-select" asp-items="Html.GetEnumSelectList<FollowUpStatus>()"></select>
+                            <span asp-validation-for="Status" class="text-danger small"></span>
+                        </div>
+
+                        <div class="col-12">
+                            <label asp-for="Remarks" class="form-label fw-semibold"></label>
+                            <textarea asp-for="Remarks" class="form-control" rows="3"></textarea>
+                            <span asp-validation-for="Remarks" class="text-danger small"></span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between pt-3 border-top">
+                        <a asp-action="Reschedule" asp-route-id="@Model.FollowUpId" class="btn btn-outline-warning">
+                            <i class="bi bi-calendar2-range me-1"></i> Reschedule Date
+                        </a>
+                        <div class="d-flex gap-2">
+                            <a asp-action="Index" class="btn btn-light border px-4">Cancel</a>
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="bi bi-check-circle me-1"></i> Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        const relatedSelect = document.getElementById('relatedTypeSelect');
+        const customerDiv = document.getElementById('customerDiv');
+        const leadDiv = document.getElementById('leadDiv');
+        const oppDiv = document.getElementById('oppDiv');
+
+        function toggleRelated() {
+            const val = relatedSelect.value;
+            if (val === '0') {
+                customerDiv.classList.remove('d-none');
+                leadDiv.classList.add('d-none');
+                oppDiv.classList.add('d-none');
+            } else if (val === '1') {
+                customerDiv.classList.add('d-none');
+                leadDiv.classList.remove('d-none');
+                oppDiv.classList.add('d-none');
+            } else if (val === '2') {
+                customerDiv.classList.add('d-none');
+                leadDiv.classList.add('d-none');
+                oppDiv.classList.remove('d-none');
+            }
+        }
+
+        relatedSelect.addEventListener('change', toggleRelated);
+        toggleRelated();
+    </script>
+}

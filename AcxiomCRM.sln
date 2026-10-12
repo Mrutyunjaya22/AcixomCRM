@@ -1,0 +1,40 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AcxiomCRM.Core", "AcxiomCRM.Core\AcxiomCRM.Core.csproj", "{BF21C04A-2F7E-4198-9DF8-A01F573D7BDC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AcxiomCRM.Infrastructure", "AcxiomCRM.Infrastructure\AcxiomCRM.Infrastructure.csproj", "{4DB3B889-9C40-464E-85A2-22E42BF01C81}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AcxiomCRM.Web", "AcxiomCRM.Web\AcxiomCRM.Web.csproj", "{D4B18921-360F-452E-B9EF-E237C6473DBF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AcxiomCRM.Tests", "AcxiomCRM.Tests\AcxiomCRM.Tests.csproj", "{9AF47F74-3E59-4196-97B8-ED0071440E29}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BF21C04A-2F7E-4198-9DF8-A01F573D7BDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BF21C04A-2F7E-4198-9DF8-A01F573D7BDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BF21C04A-2F7E-4198-9DF8-A01F573D7BDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BF21C04A-2F7E-4198-9DF8-A01F573D7BDC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4DB3B889-9C40-464E-85A2-22E42BF01C81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4DB3B889-9C40-464E-85A2-22E42BF01C81}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4DB3B889-9C40-464E-85A2-22E42BF01C81}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4DB3B889-9C40-464E-85A2-22E42BF01C81}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4B18921-360F-452E-B9EF-E237C6473DBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4B18921-360F-452E-B9EF-E237C6473DBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4B18921-360F-452E-B9EF-E237C6473DBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4B18921-360F-452E-B9EF-E237C6473DBF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9AF47F74-3E59-4196-97B8-ED0071440E29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9AF47F74-3E59-4196-97B8-ED0071440E29}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9AF47F74-3E59-4196-97B8-ED0071440E29}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9AF47F74-3E59-4196-97B8-ED0071440E29}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

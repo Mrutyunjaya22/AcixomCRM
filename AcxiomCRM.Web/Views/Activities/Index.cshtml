@@ -1,0 +1,182 @@
+@model ActivityListViewModel
+@using AcxiomCRM.Core.Enums
+@{
+    ViewData["Title"] = "Activity Log";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="h3 mb-1 text-gray-800">Activity History</h1>
+        <p class="text-muted mb-0">Track and review all client calls, meetings, emails, and internal tasks.</p>
+    </div>
+    <div>
+        <a asp-action="Create" class="btn btn-primary shadow-sm">
+            <i class="bi bi-plus-circle me-1"></i> Log Activity
+        </a>
+    </div>
+</div>
+
+<!-- Filter Card -->
+<div class="card shadow-sm mb-4">
+    <div class="card-body">
+        <form method="get" asp-action="Index" class="row g-3">
+            <div class="col-md-2">
+                <label class="form-label text-muted small">Activity Type</label>
+                <select name="type" class="form-select" asp-items="Html.GetEnumSelectList<ActivityType>()">
+                    <option value="">-- All Types --</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label text-muted small">Status</label>
+                <select name="status" class="form-select" asp-items="Html.GetEnumSelectList<ActivityStatus>()">
+                    <option value="">-- All Statuses --</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label text-muted small">From Date</label>
+                <input type="date" name="startDate" value="@Model.StartDate?.ToString("yyyy-MM-dd")" class="form-control" />
+            </div>
+            <div class="col-md-2">
+                <label class="form-label text-muted small">To Date</label>
+                <input type="date" name="endDate" value="@Model.EndDate?.ToString("yyyy-MM-dd")" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label class="form-label text-muted small">Assigned User</label>
+                <select name="assignedToId" class="form-select" asp-items="Model.SalesUsersList">
+                    <option value="">-- All Users --</option>
+                </select>
+            </div>
+            <div class="col-md-1 d-flex align-items-end gap-1">
+                <button type="submit" class="btn btn-secondary w-100">Filter</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Table Card -->
+<div class="card shadow-sm">
+    <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+        <h6 class="m-0 fw-bold text-primary">Logged Activities (@Model.TotalCount)</h6>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Subject & Notes</th>
+                        <th>Associated Record</th>
+                        <th>Assigned To</th>
+                        <th>Status</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Activities.Any())
+                    {
+                        foreach (var act in Model.Activities)
+                        {
+                            var typeIcon = act.ActivityType switch
+                            {
+                                ActivityType.Call => "bi-telephone-fill text-primary",
+                                ActivityType.Meeting => "bi-people-fill text-success",
+                                ActivityType.Email => "bi-envelope-fill text-info",
+                                _ => "bi-check2-square text-secondary"
+                            };
+
+                            <tr>
+                                <td>
+                                    <div class="fw-semibold">@act.ActivityDate.ToString("MMM dd, yyyy")</div>
+                                    <small class="text-muted">@act.CreatedDate.ToString("hh:mm tt")</small>
+                                </td>
+                                <td>
+                                    <span class="d-inline-flex align-items-center gap-1">
+                                        <i class="bi @typeIcon"></i> @act.ActivityType
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="fw-bold">@act.Subject</div>
+                                    @if (!string.IsNullOrWhiteSpace(act.Description))
+                                    {
+                                        <small class="text-muted d-block text-truncate" style="max-width: 320px;">@act.Description</small>
+                                    }
+                                </td>
+                                <td>
+                                    @if (act.Customer != null)
+                                    {
+                                        <a asp-controller="Customers" asp-action="Details" asp-route-id="@act.CustomerId" class="text-decoration-none">
+                                            <i class="bi bi-building me-1"></i>@act.Customer.CustomerName
+                                        </a>
+                                    }
+                                    else if (act.Lead != null)
+                                    {
+                                        <a asp-controller="Leads" asp-action="Details" asp-route-id="@act.LeadId" class="text-decoration-none">
+                                            <i class="bi bi-person me-1"></i>@act.Lead.LeadName
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">General</span>
+                                    }
+                                </td>
+                                <td>
+                                    <small class="text-muted">@(act.AssignedTo?.FullName ?? "Unassigned")</small>
+                                </td>
+                                <td>
+                                    <span class="badge @(act.Status == ActivityStatus.Completed ? "bg-success" : "bg-warning text-dark") px-2 py-1">
+                                        @act.Status
+                                    </span>
+                                </td>
+                                <td class="text-end">
+                                    <a asp-action="Edit" asp-route-id="@act.ActivityId" class="btn btn-sm btn-light border">
+                                        <i class="bi bi-pencil"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center py-5 text-muted">
+                                <i class="bi bi-card-checklist text-secondary display-6 d-block mb-2"></i>
+                                No activities recorded matching criteria.
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    @if (Model.TotalPages > 1)
+    {
+        <div class="card-footer bg-white d-flex justify-content-between align-items-center py-3">
+            <small class="text-muted">Showing page @Model.CurrentPage of @Model.TotalPages (@Model.TotalCount total)</small>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    <li class="page-item @(Model.CurrentPage == 1 ? "disabled" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-page="@(Model.CurrentPage - 1)"
+                           asp-route-type="@Model.Type" asp-route-status="@Model.Status"
+                           asp-route-assignedToId="@Model.AssignedToId">Previous</a>
+                    </li>
+                    @for (int p = 1; p <= Model.TotalPages; p++)
+                    {
+                        <li class="page-item @(p == Model.CurrentPage ? "active" : "")">
+                            <a class="page-link" asp-action="Index" asp-route-page="@p"
+                               asp-route-type="@Model.Type" asp-route-status="@Model.Status"
+                               asp-route-assignedToId="@Model.AssignedToId">@p</a>
+                        </li>
+                    }
+                    <li class="page-item @(Model.CurrentPage == Model.TotalPages ? "disabled" : "")">
+                        <a class="page-link" asp-action="Index" asp-route-page="@(Model.CurrentPage + 1)"
+                           asp-route-type="@Model.Type" asp-route-status="@Model.Status"
+                           asp-route-assignedToId="@Model.AssignedToId">Next</a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    }
+</div>

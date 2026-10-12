@@ -1,0 +1,181 @@
+@inject ICurrentUserService CurrentUser
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString();
+    var currentAction = ViewContext.RouteData.Values["action"]?.ToString();
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - AcxiomCRM</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Bootstrap 5 & Bootstrap Icons -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Custom CRM Theme -->
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+@if (User.Identity?.IsAuthenticated == true)
+{
+    <div class="app-wrapper">
+        <!-- Sidebar Navigation -->
+        <aside class="app-sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-brand-icon">
+                    <i class="bi bi-diagram-3-fill"></i>
+                </div>
+                <div>
+                    <h5 class="sidebar-brand-title">AcxiomCRM</h5>
+                    <p class="sidebar-brand-sub">Enterprise Sales CRM</p>
+                </div>
+            </div>
+
+            <div class="sidebar-nav">
+                <div class="nav-section-title">Core CRM</div>
+                <a asp-controller="Dashboard" asp-action="Index" class="sidebar-link @(currentController == "Dashboard" ? "active" : "")">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a asp-controller="Customers" asp-action="Index" class="sidebar-link @(currentController == "Customers" ? "active" : "")">
+                    <i class="bi bi-people-fill"></i>
+                    <span>Customers</span>
+                </a>
+                <a asp-controller="Leads" asp-action="Index" class="sidebar-link @(currentController == "Leads" ? "active" : "")">
+                    <i class="bi bi-funnel-fill"></i>
+                    <span>Leads</span>
+                </a>
+                <a asp-controller="Opportunities" asp-action="Index" class="sidebar-link @(currentController == "Opportunities" ? "active" : "")">
+                    <i class="bi bi-briefcase-fill"></i>
+                    <span>Opportunities</span>
+                </a>
+                <a asp-controller="FollowUps" asp-action="Index" class="sidebar-link @(currentController == "FollowUps" ? "active" : "")">
+                    <i class="bi bi-calendar-check-fill"></i>
+                    <span>Follow-Ups</span>
+                </a>
+                <a asp-controller="Activities" asp-action="Index" class="sidebar-link @(currentController == "Activities" ? "active" : "")">
+                    <i class="bi bi-clock-history"></i>
+                    <span>Activities</span>
+                </a>
+
+                <div class="nav-section-title mt-3">Insights</div>
+                <a asp-controller="Reports" asp-action="Index" class="sidebar-link @(currentController == "Reports" ? "active" : "")">
+                    <i class="bi bi-bar-chart-fill"></i>
+                    <span>Reports & Export</span>
+                </a>
+
+                @if (CurrentUser.IsAdmin)
+                {
+                    <div class="nav-section-title mt-3">Administration</div>
+                    <a asp-controller="Users" asp-action="Index" class="sidebar-link @(currentController == "Users" ? "active" : "")">
+                        <i class="bi bi-person-gear"></i>
+                        <span>User Management</span>
+                    </a>
+                    <a asp-controller="AuditLogs" asp-action="Index" class="sidebar-link @(currentController == "AuditLogs" ? "active" : "")">
+                        <i class="bi bi-shield-lock-fill"></i>
+                        <span>Audit Logs</span>
+                    </a>
+                }
+
+                <div class="nav-section-title mt-3">Developer</div>
+                <a href="/swagger" target="_blank" class="sidebar-link">
+                    <i class="bi bi-code-slash"></i>
+                    <span>REST API Docs</span>
+                </a>
+            </div>
+
+            <div class="sidebar-footer">
+                <div class="d-flex align-items-center justify-content-between">
+                    <div>
+                        <small class="text-white-50 d-block">Role</small>
+                        <span class="badge @(CurrentUser.IsAdmin ? "bg-danger" : CurrentUser.IsManager ? "bg-info text-dark" : "bg-success")">
+                            @CurrentUser.PrimaryRole
+                        </span>
+                    </div>
+                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-sm btn-outline-light" title="Sign Out">
+                            <i class="bi bi-box-arrow-right"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Workspace -->
+        <div class="app-main">
+            <!-- Header -->
+            <header class="app-header">
+                <div>
+                    <h5 class="mb-0 text-dark fw-bold">@ViewData["Title"]</h5>
+                </div>
+                <div class="header-user-info">
+                    <div class="user-avatar">
+                        @(CurrentUser.UserName?.Substring(0, 1).ToUpper() ?? "U")
+                    </div>
+                    <div>
+                        <div class="fw-semibold text-dark lh-1">@CurrentUser.UserName</div>
+                        <small class="text-muted">@CurrentUser.PrimaryRole</small>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Alerts & Main Content -->
+            <main role="main" class="app-content">
+                @if (TempData["SuccessMessage"] != null)
+                {
+                    <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
+                        <i class="bi bi-check-circle-fill me-2 fs-5"></i>
+                        <div>@TempData["SuccessMessage"]</div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                @if (TempData["ErrorMessage"] != null)
+                {
+                    <div class="alert alert-danger alert-dismissible fade show d-flex align-items-center" role="alert">
+                        <i class="bi bi-exclamation-triangle-fill me-2 fs-5"></i>
+                        <div>@TempData["ErrorMessage"]</div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                @if (TempData["WarningMessage"] != null)
+                {
+                    <div class="alert alert-warning alert-dismissible fade show d-flex align-items-center" role="alert">
+                        <i class="bi bi-exclamation-circle-fill me-2 fs-5"></i>
+                        <div>@TempData["WarningMessage"]</div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                }
+
+                @RenderBody()
+            </main>
+        </div>
+    </div>
+}
+else
+{
+    <!-- Unauthenticated Layout (Login / Register / AccessDenied) -->
+    <div class="min-vh-100 d-flex flex-column justify-content-center bg-light">
+        <main role="main">
+            @RenderBody()
+        </main>
+    </div>
+}
+
+<!-- Core Scripts -->
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
