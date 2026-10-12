@@ -205,12 +205,6 @@ dotnet test AcxiomCRM.sln --logger "console;verbosity=normal"
 - **`ApiControllerTests`**: Validates HTTP status codes (`200`, `201`, `400`, `404`) and DTO mapping.
 - **`AuthenticationSecurityTests`**: Validates login, lockout, and password complexity.
 
-**Test Run Output:**
-```
-Passed!  - Failed: 0, Passed: 45, Skipped: 0, Total: 45, Duration: 2.0s
-```
-
----
 
 ## 📡 REST API Documentation
 
@@ -228,9 +222,9 @@ The REST API exposes authenticated endpoints under the `/api/` prefix with unifo
 - `GET  /api/opportunities`: Scoped sales opportunities.
 - `POST /api/opportunities`: Create opportunity with business rule validation.
 
-*Refer to [`docs/API.md`](docs/API.md) for full request/response schemas and example cURL payloads.*
 
----
+
+
 
 ## 📚 Detailed Documentation Suite
 
@@ -244,7 +238,7 @@ Comprehensive architecture, security, database, and interview preparation guides
 - 🎤 [Technical Interview Preparation & Defense](docs/INTERVIEW_PREPARATION.md)
 - 📝 [Chronological Development Log](docs/DEVELOPMENT_LOG.md)
 
----
+
 
 ## 🔮 Known Limitations & Production Roadmap
 
@@ -253,6 +247,3 @@ Comprehensive architecture, security, database, and interview preparation guides
 3. **Database Scale**: SQLite is active by default for immediate, zero-friction developer setup. Set `UseSqlite: false` and supply a SQL Server connection string in `appsettings.json` for enterprise clustering.
 4. **Real-time Notifications**: Follow-up reminders are currently polled via dashboard queries. Integrating ASP.NET Core SignalR will enable real-time browser push notifications.
 
----
-
-*Authored for the AcxiomCRM Technical Interview & Portfolio Evaluation.*
